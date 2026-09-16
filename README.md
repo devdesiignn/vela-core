@@ -1,6 +1,6 @@
-# receipt-core
+# vela-core
 
-Shared schema, migrations, and data model for the [Receipt Intelligence Platform](https://github.com/devdesiignn/receipt-intelligence-platform) — the contract every other service in the set depends on.
+Shared schema, migrations, and data model for [Vela](https://github.com/devdesiignn/vela) (Receipt Intelligence Platform) — the contract every other service in the set depends on.
 
 ## What lives here
 
@@ -35,4 +35,4 @@ Initial schema complete: all four core tables are migrated, documented, seeded w
 
 ## Related repos
 
-Part of the [Receipt Intelligence Platform](https://github.com/devdesiignn/receipt-intelligence-platform).
+Part of [Vela](https://github.com/devdesiignn/vela) (Receipt Intelligence Platform).

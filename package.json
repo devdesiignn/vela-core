@@ -1,7 +1,7 @@
 {
-  "name": "receipt-core",
+  "name": "vela-core",
   "version": "1.0.0",
-  "description": "Shared schema, migrations, and data model for the Receipt Intelligence Platform — the contract every other service in the set depends on.",
+  "description": "Shared schema, migrations, and data model for Vela (Receipt Intelligence Platform) — the contract every other service in the set depends on.",
   "private": true,
   "type": "module",
   "main": "index.js",
@@ -11,8 +11,8 @@
     "docker:up:prod": "docker compose --env-file .env.production up -d --wait",
     "docker:down": "docker compose down",
     "docker:ps": "docker compose ps",
-    "db:ready": "docker compose exec postgres pg_isready -U receipt_core",
-    "db:psql": "docker compose exec -it postgres psql -U receipt_core -d receipt_core_dev",
+    "db:ready": "docker compose exec postgres pg_isready -U vela_core",
+    "db:psql": "docker compose exec -it postgres psql -U vela_core -d vela_core_dev",
     "migrate:create": "node-pg-migrate create",
     "migrate:dev": "dotenv -e .env -- node-pg-migrate up",
     "migrate:dev:down": "dotenv -e .env -- node-pg-migrate down",
@@ -39,15 +39,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/devdesiignn/receipt-core.git"
+    "url": "git+https://github.com/devdesiignn/vela-core.git"
   },
   "keywords": [],
   "author": "",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/devdesiignn/receipt-core/issues"
+    "url": "https://github.com/devdesiignn/vela-core/issues"
   },
-  "homepage": "https://github.com/devdesiignn/receipt-core#readme",
+  "homepage": "https://github.com/devdesiignn/vela-core#readme",
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@faker-js/faker": "^10.6.0",

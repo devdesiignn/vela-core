@@ -9,7 +9,7 @@ services:
     ports:
       - "${PGPORT}:5432"
     volumes:
-      - receipt_core_pgdata:/var/lib/postgresql/data
+      - vela_core_pgdata:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${PGUSER}"]
       interval: 2s
@@ -17,4 +17,4 @@ services:
       retries: 10
 
 volumes:
-  receipt_core_pgdata:
+  vela_core_pgdata:

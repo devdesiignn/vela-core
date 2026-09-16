@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://github.com/devdesiignn/receipt-core/schemas/line_item.schema.json",
+  "$id": "https://github.com/devdesiignn/vela-core/schemas/line_item.schema.json",
   "title": "LineItem",
   "type": "object",
   "required": [

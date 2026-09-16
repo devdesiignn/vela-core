@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this repo is
 
-`receipt-core` is the shared schema/data-contract repo for the [Receipt Intelligence Platform](https://github.com/devdesiignn/receipt-intelligence-platform). It defines the core entities (`stores`, `receipts`, `line_items`, `extraction_reviews`), the migrations that evolve that schema, and synthetic seed data — all consumed by other services in the platform, which may be written in different languages.
+`vela-core` is the shared schema/data-contract repo for [Vela](https://github.com/devdesiignn/vela) (Receipt Intelligence Platform). It defines the core entities (`stores`, `receipts`, `line_items`, `extraction_reviews`), the migrations that evolve that schema, and synthetic seed data — all consumed by other services in the platform, which may be written in different languages.
 
 **Status: initial schema complete.** All 4 core tables are migrated, documented, seeded, and covered by automated tests (`npm test`). Local Postgres is provisioned via Docker Compose — see below for the full setup. Schema evolves via additive migrations after the initial 4 (e.g. constraints added later) — check `migrations/` for the current full list rather than assuming only 4 files exist.
 
@@ -15,12 +15,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - If Docker Desktop's engine isn't running yet, `npm run docker:start` (`node scripts/docker-start.js`) launches it and polls until it responds — an opt-in convenience, not chained into `bootstrap:dev`/`pretest`, since the Docker Desktop install path it uses (`scripts/docker-start.js`) is hardcoded to this machine and won't be portable elsewhere.
 - Start (dev): `npm run docker:up` (`docker compose up -d --wait` — `--wait` blocks until the healthcheck passes, so Postgres is actually ready to accept connections before the command returns)
 - Start against `.env.production` instead (only relevant if Postgres is ever self-hosted via Docker for prod — see below): `npm run docker:up:prod` (`docker compose --env-file .env.production up -d --wait`)
-- Stop: `npm run docker:down` (`docker compose down`; data persists in the `receipt_core_pgdata` volume — run `docker compose down -v` directly to also wipe the volume)
+- Stop: `npm run docker:down` (`docker compose down`; data persists in the `vela_core_pgdata` volume — run `docker compose down -v` directly to also wipe the volume)
 - Check status: `npm run docker:ps` (`docker compose ps`)
-- Check the DB is accepting connections: `npm run db:ready` (`docker compose exec postgres pg_isready -U receipt_core`)
-- Open an interactive `psql` shell inside the container: `npm run db:psql` (`docker compose exec -it postgres psql -U receipt_core -d receipt_core_dev`)
+- Check the DB is accepting connections: `npm run db:ready` (`docker compose exec postgres pg_isready -U vela_core`)
+- Open an interactive `psql` shell inside the container: `npm run db:psql` (`docker compose exec -it postgres psql -U vela_core -d vela_core_dev`)
 
-Connects on `localhost:1111` (mapped to the container's default 5432), user/db `receipt_core` / `receipt_core_dev`. Closing the Docker Desktop window does not stop the container — only fully quitting Docker Desktop or running `docker compose down` does.
+Connects on `localhost:1111` (mapped to the container's default 5432), user/db `vela_core` / `vela_core_dev`. Closing the Docker Desktop window does not stop the container — only fully quitting Docker Desktop or running `docker compose down` does.
 
 ## Environment files
 
@@ -78,7 +78,7 @@ This repo does **not**:
 - Process or extract data from receipt images.
 - Assume every consuming service is written in the same language.
 
-Keep contributions limited to schema, migrations, the data contract, and synthetic seed data — application/service logic belongs in the other repos under the Receipt Intelligence Platform.
+Keep contributions limited to schema, migrations, the data contract, and synthetic seed data — application/service logic belongs in the other repos under Vela.
 
 ## Commit conventions
 
