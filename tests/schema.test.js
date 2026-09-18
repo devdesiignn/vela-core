@@ -70,6 +70,7 @@ test("flagged_reason_type and review_status_type enums exist with expected value
     "validation_failed",
     "illegible",
     "manual_flag",
+    "extraction_failed",
   ]);
   assert.deepEqual(statuses, ["pending", "resolved", "rejected"]);
 });

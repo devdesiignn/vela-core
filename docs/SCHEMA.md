@@ -123,7 +123,7 @@ This is the most complex table, because it's solving a genuinely harder problem 
 | `id`               | uuid              | no        | Unique identifier for this review row.                                                                                                                                                                                                                                    |
 | `receipt_id`       | uuid              | no        | Foreign key back to the `receipts` row this review concerns.                                                                                                                                                                                                              |
 | `line_item_id`     | uuid              | yes       | Foreign key back to a `line_items` row, only if this review is about one specific line item. See "Locating what's flagged" below.                                                                                                                                         |
-| `field_name`       | text              | no        | Which field is in question — either a real column name (`total`, `quantity`, ...) or one of two special sentinel values. See below.                                                                                                                                       |
+| `field_name`       | text              | no        | Which field is in question — either a real column name (`total`, `quantity`, ...) or one of three special sentinel values. See below.                                                                                                                                     |
 | `extractor_source` | text              | no        | Which agent/model produced this candidate value (e.g. `"claude-vision-v2"`, `"tesseract-ocr"`) — required because multiple agents can run on the same receipt, and you need to know whose answer this is.                                                                 |
 | `extracted_value`  | text              | yes       | What that agent actually extracted for this field. Stored as plain text regardless of the field's real type, since this table has to hold candidate values for many different kinds of fields.                                                                            |
 | `confidence_score` | numeric(4,3)      | no        | How confident that agent was in its answer, stored as a number from 0 to 1 (e.g. `0.412`). Low confidence is typically why the row exists at all. Kept as a 0–1 decimal in the contract; format it as a percentage (e.g. `0.412` → "41.2%") only at the point of display. |
@@ -138,20 +138,22 @@ This is the most complex table, because it's solving a genuinely harder problem 
 
 **What "enum" means:** an enum (short for "enumeration") is a column restricted to one of a small, fixed set of allowed text values — Postgres will reject any value outside that list. This schema defines two enums:
 
-- `flagged_reason_type`: `low_confidence`, `conflicting_extractions`, `validation_failed`, `illegible`, `manual_flag`
+- `flagged_reason_type`: `low_confidence`, `conflicting_extractions`, `validation_failed`, `illegible`, `manual_flag`, `extraction_failed`
 - `review_status_type`: `pending`, `resolved`, `rejected`
 
 Using an enum instead of plain free-text here guarantees every row's `flagged_reason`/`status` is one of a known, meaningful set of values — nothing else, no typos, no inconsistent capitalization.
 
 ### Locating what's flagged
 
-`line_item_id` (nullable) and `field_name` together answer "what exactly is this review about." There are three cases:
+`line_item_id` (nullable) and `field_name` together answer "what exactly is this review about." There are four cases:
 
 1. **A single field is wrong (the common case).** `field_name` holds the actual column name (`"total"`, `"quantity"`, `"staff_name"`, etc.). `line_item_id` is set if that field belongs to a specific line item, or left empty if it's a receipt-level field (like `total` on the receipt itself). A line item with 3 wrong fields produces 3 separate rows — one per field — all sharing the same `line_item_id`.
 
 2. **The row itself is wrong** — meaning the extraction merged two purchased items into one line, split one item into two, or invented a line item that isn't really there. `field_name = "line_item"` (a literal sentinel value, not a real column name), and `line_item_id` points at the specific offending row. `reviewed_value` then holds either a full corrected line, or the literal text `"delete"` if the line item shouldn't exist at all.
 
 3. **An item was missed entirely.** `field_name = "missing_line_item"`, `line_item_id` is empty (there's no row to point at — nothing was created). `extracted_value` is also empty, since nothing was extracted. `reviewed_value` holds the full item that should be added.
+
+4. **Extraction failed for the whole receipt** — no usable candidate data at all: an unreadable image, a vendor API error, or any other total failure with nothing to reconcile. `field_name = "receipt"` (a literal sentinel value), `line_item_id` is empty, and `extracted_value` is also empty, since nothing was extracted. This case is always paired with `flagged_reason = "extraction_failed"`, so it's unambiguous even without inspecting `field_name`. `reviewed_value` holds the full corrected receipt data, once available (e.g. from a re-scan or manual entry).
 
 ### Multiple extractors, multiple agents
 
@@ -164,7 +166,7 @@ Using an enum instead of plain free-text here guarantees every row's `flagged_re
 
 These two enums answer completely different questions, and it's easy to conflate them:
 
-- **`flagged_reason` answers: "why does this row exist?"** — `low_confidence`, `conflicting_extractions`, `validation_failed`, and `illegible` are all things the extraction pipeline detects automatically, on its own, with no human involved yet. `manual_flag` is the exception: it's for when a human notices something wrong that the pipeline was actually confident about and got wrong anyway (e.g. the pipeline extracted ₦4,500 very confidently, but you happen to know the real total was ₦4,050 — nothing automatic would ever catch that).
+- **`flagged_reason` answers: "why does this row exist?"** — `low_confidence`, `conflicting_extractions`, `validation_failed`, `illegible`, and `extraction_failed` are all things the extraction pipeline detects automatically, on its own, with no human involved yet. `manual_flag` is the exception: it's for when a human notices something wrong that the pipeline was actually confident about and got wrong anyway (e.g. the pipeline extracted ₦4,500 very confidently, but you happen to know the real total was ₦4,050 — nothing automatic would ever catch that). Note `illegible` and `extraction_failed` are different: `illegible` means a candidate value exists but couldn't be read confidently (e.g. a smudged digit); `extraction_failed` means no candidate value exists at all — always paired with `field_name = "receipt"`.
 
 - **`status` answers: "what happened when someone tried to deal with it?"** — starts at `pending`, and moves to either `resolved` (fixed) or `rejected`. Importantly, `rejected` does **not** mean "permanently unfixable" — it means "couldn't resolve this right now." A rejected row can later move to `resolved` if the correct value becomes known (e.g. you check a bank statement, or simply remember). This is a manual update to the row, not something that happens automatically.
 

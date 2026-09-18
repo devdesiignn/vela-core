@@ -1,7 +1,8 @@
 // Hand-written, predictable seed data — covers specific known cases:
 // a receipt with every optional field filled, one with almost none,
 // the per-register VAT case, and each extraction_reviews case
-// (field-level, line-item-level, missing-item, multi-extractor conflict).
+// (field-level, line-item-level, missing-item, multi-extractor conflict,
+// total-extraction-failure).
 
 const STORE_SUPREME = "11111111-1111-1111-1111-111111111111";
 const STORE_MOMROTA = "22222222-2222-2222-2222-222222222222";
@@ -167,5 +168,18 @@ export const seedFixed = async (client) => {
        0.68, 'conflicting_extractions', 'pending'
      )`,
     [RECEIPT_FULL, LINE_ITEM_FULL_1]
+  );
+
+  // extraction_reviews case 6: extraction failed for the whole receipt
+  // (receipt sentinel) — no candidate data at all, e.g. an unreadable image
+  await client.query(
+    `INSERT INTO extraction_reviews (
+       receipt_id, line_item_id, field_name, extractor_source, extracted_value,
+       confidence_score, flagged_reason, status
+     ) VALUES (
+       $1, NULL, 'receipt', 'claude-vision-v2', NULL,
+       0.00, 'extraction_failed', 'pending'
+     )`,
+    [RECEIPT_VAT_TILL4]
   );
 };

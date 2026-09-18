@@ -37,9 +37,10 @@ export const up = (pgm) => {
       references: "line_items",
       onDelete: "CASCADE",
     },
-    // an actual field name (total, quantity, staff_name, ...), or one of two
-    // sentinel values: "line_item" (the row itself is wrong) or
-    // "missing_line_item" (an item was missed entirely)
+    // an actual field name (total, quantity, staff_name, ...), or one of three
+    // sentinel values: "line_item" (the row itself is wrong), "missing_line_item"
+    // (an item was missed entirely), or "receipt" (extraction failed for the
+    // whole receipt — see flagged_reason "extraction_failed")
     field_name: { type: "text", notNull: true },
     extractor_source: { type: "text", notNull: true },
     extracted_value: { type: "text" },
